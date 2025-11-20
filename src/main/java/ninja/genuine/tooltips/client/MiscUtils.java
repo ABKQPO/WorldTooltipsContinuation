@@ -1,10 +1,7 @@
 package ninja.genuine.tooltips.client;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -12,77 +9,15 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import ninja.genuine.tooltips.WorldTooltips;
-import ninja.genuine.tooltips.system.Tooltip;
+import ninja.genuine.tooltips.config.Config;
 
 import java.util.List;
 import java.util.Objects;
 
-public class RenderEvent {
-	private static Minecraft mc;
-    //public static final Logger logger = LogManager.getLogger();
-	private Tooltip cache;
-    double distance;
-
-    public RenderEvent() {}
-	public void post() {
-		mc = Minecraft.getMinecraft();
-	}
-
-	public void syncColors() {
-		if (cache != null)
-			cache.syncSettings();
-	}
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class MiscUtils {
 	
-	public int ticksOver;
-	private long lastTickCount = 0;
-	
-	@SubscribeEvent
-	public void onRenderGameOverlayEvent(RenderGameOverlayEvent.Post event) {
-        if (event.type != RenderGameOverlayEvent.ElementType.ALL) {
-            return;
-        }
-		if(mc == null || mc.theWorld == null || mc.thePlayer == null || mc.objectMouseOver == null) {
-			return;
-		}
-		
-		MovingObjectPosition objectMouseOver = mc.objectMouseOver;
-		EntityClientPlayerMP thePlayer = mc.thePlayer;
-		WorldClient theWorld = mc.theWorld;
-		
-        if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-            distance = thePlayer.getDistance(objectMouseOver.blockX, objectMouseOver.blockY, objectMouseOver.blockZ);
-        } else if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY) {
-            distance = thePlayer.getDistanceToEntity(objectMouseOver.entityHit);
-        }
-		
-		
-		EntityItem entity = WorldTooltips.enableMaxDistanceMethod
-				? getMouseOver(mc, event.partialTicks)
-				: getEntityItem(distance, thePlayer, event.partialTicks);
-		
-		long currentTickCount = theWorld.getTotalWorldTime();
-		
-		if (currentTickCount != lastTickCount) {
-			lastTickCount = currentTickCount;
-			if (entity != null) {
-				ticksOver++;
-			} else {
-				ticksOver = WorldTooltips.ticksDelayReset ? 0 : Math.max(0, --ticksOver);
-			}
-		}
-		
-		if (ticksOver >= WorldTooltips.ticksDelay && entity != null) {
-			if (cache == null || cache.getEntity() != entity)
-				cache = new Tooltip(thePlayer, entity);
-			
-			cache.renderTooltip3D(mc, event.partialTicks);
-		}
-	}
-
-    public static EntityItem getEntityItem(EntityPlayer player, Vec3 vec31, Vec3 vec3) {
-        mc.mcProfiler.startSection("world-tooltips"); //Now this thing is in the new method, yay
+    public static EntityItem getEntityItem(Minecraft mc, EntityPlayer player, Vec3 vec31, Vec3 vec3) {
         float f1 = 1.0F;
         double d0 = player.capabilities.isCreativeMode ? 5.0F : 4.5F;
         List list = player.worldObj.getEntitiesWithinAABBExcludingEntity(player, player.boundingBox.addCoord(vec31.xCoord * d0, vec31.yCoord * d0, vec31.zCoord * d0).expand(f1, f1, f1));
@@ -107,25 +42,24 @@ public class RenderEvent {
                 } else if (movingobjectposition != null) return (EntityItem) entity;
             }
         }
-        mc.mcProfiler.endSection();
         return null;
     }
-public static EntityItem getEntityItem(double distance, EntityPlayer player, float partialTicks) {
-    Vec3 vec31 = player.getLook(partialTicks);
-    Vec3 vec3 = player.getPosition(partialTicks);
-    EntityItem item = getEntityItem(player, vec31, vec3);
-
-    if (item != null && player.getDistanceToEntity(item) < distance) return item;
-
-    return null;
-
-}
-//The old rendering method, allows to use custom tooltips render range (maxDistance), but because of this, they are rendered through the walls
-	@SuppressWarnings("unchecked")
+	
+	public static EntityItem getEntityItem(Minecraft mc, double distance, EntityPlayer player, float partialTicks) {
+	    Vec3 vec31 = player.getLook(partialTicks);
+	    Vec3 vec3 = player.getPosition(partialTicks);
+	    EntityItem item = getEntityItem(mc, player, vec31, vec3);
+	
+	    if (item != null && player.getDistanceToEntity(item) < distance) return item;
+	
+	    return null;
+	
+	}
+	
+	//The old rendering method, allows to use custom tooltips render range (maxDistance), but because of this, they are rendered through the walls
 	public static EntityItem getMouseOver(Minecraft mc, float partialTicks) {
 		EntityLivingBase viewer = mc.renderViewEntity;
-		mc.mcProfiler.startSection("world-tooltips");
-		double distanceLook = WorldTooltips.maxDistance;
+		double distanceLook = Config.MAX_DISTANCE;
 		Vec3 eyes = viewer.getPosition(partialTicks);
 		Vec3 look = viewer.getLook(partialTicks);
 		Vec3 eyesLook = eyes.addVector(look.xCoord * distanceLook, look.yCoord * distanceLook, look.zCoord * distanceLook);
@@ -155,7 +89,7 @@ public static EntityItem getEntityItem(double distance, EntityPlayer player, flo
                 }
             }
         }
-		mc.mcProfiler.endSection();
 		return target;
 	}
+	
 }

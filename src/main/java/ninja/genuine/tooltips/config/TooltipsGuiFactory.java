@@ -1,4 +1,4 @@
-package ninja.genuine.tooltips.client;
+package ninja.genuine.tooltips.config;
 
 import java.util.Set;
 

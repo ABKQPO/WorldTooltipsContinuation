@@ -8,7 +8,7 @@
 		"mcversion": "${minecraftVersion}",
 		"url": "https://github.com/kotmatross28729/WorldTooltipsShadersFix",
 		"updateUrl": "",
-		"authorList": ["GenuineSounds"],
+		"authorList": ["GenuineSounds", "Kotmatross28729"],
 		"credits": "",
 	  "logoFile": "assets/world-tooltips/logo.png",
 		"screenshots": [
