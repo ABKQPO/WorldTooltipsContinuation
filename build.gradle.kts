@@ -1,5 +1,7 @@
-
 plugins {
     id("com.gtnewhorizons.gtnhconvention")
 }
-version = "1.2.3-87"
+
+tasks.withType<JavaCompile>().configureEach {
+    options.annotationProcessorPath = configurations.annotationProcessor.get()
+}

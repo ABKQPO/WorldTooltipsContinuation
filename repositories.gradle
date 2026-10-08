@@ -1,8 +1,11 @@
 // Add any additional repositories for your dependencies here.
-
 repositories {
+    mavenLocal()
     flatDir {
         dirs 'libs'
+    }
+    maven {
+        url = uri("https://jitpack.io")
     }
     maven {
         name = 'mavenpattern'
